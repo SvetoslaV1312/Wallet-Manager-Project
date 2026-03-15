@@ -1,0 +1,71 @@
+package bg.sofia.uni.fmi.mjt.commands.concretecommands;
+
+import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.commands.CommandEnum;
+import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
+import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import java.util.List;
+
+import static org.mockito.Mockito.mock;
+
+public class LogoutCommandTest {
+    @Mock
+    WalletManagerRepository repo = mock();
+
+    @Test
+    void testExecuteReturnsJsonResponse() throws Exception {
+        Command command = new LogoutCommand(List.of(), "testUser");
+
+        String result = command.execute(mock(WalletManagerRepository.class));
+
+        Assertions.assertTrue(
+                result.startsWith("{") && result.endsWith("}"),
+                "Expected the help command to return a JSON object"
+        );
+    }
+
+    @Test
+    void testExecuteContainsGoodStatus() throws Exception {
+        Command command = new LogoutCommand(List.of(), "testUser");
+
+        String result = command.execute(mock(WalletManagerRepository.class));
+
+        Assertions.assertTrue(
+                result.contains("\"status\":\"OK\""),
+                "Expected logout command to return GOOD status"
+        );
+    }
+
+    @Test
+    void testLogoutThrowsInvalidCommandArgumentCount() {
+        Command command = new LogoutCommand(List.of("--arg=test"), "testUser");
+        Assertions.assertThrows(InvalidCommandArgumentCount.class,
+                () -> command.execute(repo),
+                "Expected logout command to throw an exception"
+        );
+    }
+
+    @Test
+    void testLogoutThrowsInvalidCommandFormat() {
+        Command command = new LogoutCommand(List.of("arg test"), "testUser");
+        Assertions.assertThrows(InvalidCommandFormat.class,
+                () -> command.execute(repo),
+                "Expected logout command to throw an exception"
+        );
+    }
+
+    @Test
+    void testLogoutThrowsNoUserLoggedIn() {
+        Command command = new LogoutCommand(List.of("test"), null);
+        Assertions.assertThrows(NoUserLoggedIn.class,
+                () -> command.execute(repo),
+                "Expected logout command to throw an exception"
+        );
+    }
+}
