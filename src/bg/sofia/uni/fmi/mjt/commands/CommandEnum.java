@@ -1,6 +1,18 @@
 package bg.sofia.uni.fmi.mjt.commands;
 
-import bg.sofia.uni.fmi.mjt.commands.concretecommands.*;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.BuyCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.CheckAlertsCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.DepositCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.GetWalletOverallSummaryCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.GetWalletSummaryCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.HelpCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.ListOfferingCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.ListOfferingsCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.LoginCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.LogoutCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.RegisterCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.SellCommand;
+import bg.sofia.uni.fmi.mjt.commands.concretecommands.SetAlertCommand;
 import bg.sofia.uni.fmi.mjt.entity.User;
 
 import java.util.List;

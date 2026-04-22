@@ -5,7 +5,13 @@ import bg.sofia.uni.fmi.mjt.alerts.EventDispatcher;
 import bg.sofia.uni.fmi.mjt.entity.Asset;
 import bg.sofia.uni.fmi.mjt.entity.CachedEntity;
 import bg.sofia.uni.fmi.mjt.entity.LocalDateTimeAdapter;
-import bg.sofia.uni.fmi.mjt.exceptions.api.*;
+import bg.sofia.uni.fmi.mjt.exceptions.api.ApiExecutionException;
+import bg.sofia.uni.fmi.mjt.exceptions.api.ApiKeyLimitExceededException;
+import bg.sofia.uni.fmi.mjt.exceptions.api.BadRequestException;
+import bg.sofia.uni.fmi.mjt.exceptions.api.CryptoNotFoundException;
+import bg.sofia.uni.fmi.mjt.exceptions.api.DataUnavailableException;
+import bg.sofia.uni.fmi.mjt.exceptions.api.InsufficientPermissions;
+import bg.sofia.uni.fmi.mjt.exceptions.api.UnauthorizedKeyException;
 import bg.sofia.uni.fmi.mjt.retriever.CryptoCurrencyRetriever;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -49,7 +55,8 @@ public class CacheCrypto {
 
     private final CryptoCurrencyRetriever cryptoCurrencyRetriever;
 
-    public CacheCrypto(Reader loadFrom, CryptoCurrencyRetriever cryptoCurrencyRetriever, EventDispatcher eventDispatcher) {
+    public CacheCrypto(Reader loadFrom, CryptoCurrencyRetriever cryptoCurrencyRetriever,
+                       EventDispatcher eventDispatcher) {
         this.cache = new LinkedHashMap<>(MAX_SIZE, LOAD_FACTOR, ACCESS_ORDER);
         this.lock = new ReentrantReadWriteLock();
         this.cryptoCurrencyRetriever = cryptoCurrencyRetriever;

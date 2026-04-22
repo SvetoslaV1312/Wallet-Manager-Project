@@ -5,13 +5,9 @@ import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.AppExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
 import bg.sofia.uni.fmi.mjt.exceptions.app.repository.DataAcessException;
-import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalNameException;
-import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalPasswordException;
-import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserHasNotBeenRegistered;
 import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
-import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.util.List;

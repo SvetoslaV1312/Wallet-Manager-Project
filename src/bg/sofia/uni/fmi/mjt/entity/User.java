@@ -8,7 +8,10 @@ import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.WalletBalanceExceeded;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static bg.sofia.uni.fmi.mjt.encryption.PasswordEncryptionV2.hash;
 

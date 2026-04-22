@@ -2,7 +2,7 @@ package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
 import bg.sofia.uni.fmi.mjt.entity.User;
-import bg.sofia.uni.fmi.mjt.exceptions.api.*;
+import bg.sofia.uni.fmi.mjt.exceptions.api.ApiExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
 import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;

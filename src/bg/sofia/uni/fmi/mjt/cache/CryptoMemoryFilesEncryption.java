@@ -45,7 +45,7 @@ public class CryptoMemoryFilesEncryption {
         try {
             Files.write(keyFilePath, keyBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new CacheFileEncryptionException( "An error occurred while loading cache",e);
+            throw new CacheFileEncryptionException( "An error occurred while loading cache", e);
         }
 
     }
