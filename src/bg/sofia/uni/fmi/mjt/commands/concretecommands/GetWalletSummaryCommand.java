@@ -1,11 +1,17 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
+import bg.sofia.uni.fmi.mjt.exceptions.app.AppExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.exceptions.app.repository.DataAcessException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalNameException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalPasswordException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserHasNotBeenRegistered;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.util.List;
@@ -14,7 +20,7 @@ import java.util.Map;
 public class GetWalletSummaryCommand extends Command {
     private static final int ARGUMENTS_COUNT = 0;
 
-    public GetWalletSummaryCommand(List<String> arguments, String user) {
+    public GetWalletSummaryCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -27,15 +33,15 @@ public class GetWalletSummaryCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
-            throws NoUserLoggedIn, InvalidCommandArgumentCount,
-            InvalidCommandFormat {
+    public String execute(WalletManagerRepositoryDB storage)
+            throws AppExecutionException,
+            DataAcessException {
         isValidSessionPresent();
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);
 
         String summary = storage.getWalletSummary(user);
         return GSON.toJson(new ServerResponse(GOOD_STATUS, "Summary of the wallet of username "
-            + user + summary, null));
+            + user.username() + summary, user));
     }
 }

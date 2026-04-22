@@ -1,11 +1,12 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.api.ApiExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class ListOfferingCommand extends Command {
     private static final int ARGUMENTS_COUNT = 1;
     private static final String OFFERING = "offering";
 
-    public ListOfferingCommand(List<String> arguments, String user) {
+    public ListOfferingCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -31,7 +32,7 @@ public class ListOfferingCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
+    public String execute(WalletManagerRepositoryDB storage)
             throws InvalidCommandArgumentCount, ApiExecutionException,
             InvalidCommandFormat {
         var argsMap = ArgumentParser.parseString(arguments);
@@ -40,6 +41,6 @@ public class ListOfferingCommand extends Command {
         String offeringCode = argsMap.get(OFFERING);
         String offerings = storage.listOffering(offeringCode);
         return GSON.toJson(new ServerResponse(GOOD_STATUS,
-            "Offering: " + offerings, null));
+            "Offering: " + offerings, user));
     }
 }

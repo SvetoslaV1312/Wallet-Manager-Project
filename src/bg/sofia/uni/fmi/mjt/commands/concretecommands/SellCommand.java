@@ -1,13 +1,19 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.api.ApiExecutionException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.AppExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.exceptions.app.repository.DataAcessException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalNameException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalPasswordException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserHasNotBeenRegistered;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.CryptoNotFoundInWallet;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.util.List;
@@ -17,7 +23,7 @@ public class SellCommand extends Command {
     private static final int ARGUMENTS_COUNT = 1;
     private static final String OFFERING = "offering";
 
-    public SellCommand(List<String> arguments, String user) {
+    public SellCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -33,9 +39,9 @@ public class SellCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
-            throws NoUserLoggedIn, InvalidCommandArgumentCount, ApiExecutionException, CryptoNotFoundInWallet,
-            InvalidCommandFormat {
+    public String execute(WalletManagerRepositoryDB storage)
+            throws AppExecutionException, ApiExecutionException,
+            DataAcessException {
         isValidSessionPresent();
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);
@@ -43,7 +49,7 @@ public class SellCommand extends Command {
         var argumentsIterator = arguments.iterator();
         String offeringCode = argumentsIterator.next();
         storage.sellOffering(offeringCode, user);
-        return GSON.toJson(new ServerResponse(GOOD_STATUS, "Sell order executed", null));
+        return GSON.toJson(new ServerResponse(GOOD_STATUS, "Sell order executed", user));
 
     }
 }

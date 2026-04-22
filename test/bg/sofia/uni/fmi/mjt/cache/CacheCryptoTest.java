@@ -1,6 +1,6 @@
-package bg.sofia.uni.fmi.mjt.todo;
+package bg.sofia.uni.fmi.mjt.cache;
 
-import bg.sofia.uni.fmi.mjt.cache.CacheCrypto;
+import bg.sofia.uni.fmi.mjt.alerts.EventDispatcher;
 import bg.sofia.uni.fmi.mjt.entity.Asset;
 import bg.sofia.uni.fmi.mjt.entity.ChainAddress;
 import bg.sofia.uni.fmi.mjt.entity.Pair;
@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,16 +34,18 @@ class CacheCryptoTest {
     private CacheCrypto cache;
     @Mock
     private CryptoCurrencyRetriever mockRetriever = mock();
+    @Mock
+    private EventDispatcher eventDispatcher = mock();
 
     @BeforeEach
     void setup() {
         Reader reader = new StringReader("");
-        cache = new CacheCrypto(reader, mockRetriever);
+        cache = new CacheCrypto(reader, mockRetriever, eventDispatcher);
     }
 
     @Test
     void testGetReturnsCachedValueWhenPresentInMemory() throws Exception {
-        Asset asset = intializeAssetWithName("Test");
+        Asset asset = initializeAssetWithName("Test");
         Asset[] arr = {asset};
 
         CompletableFuture<Asset[]> future = CompletableFuture.completedFuture(arr);
@@ -59,7 +60,7 @@ class CacheCryptoTest {
 
     @Test
     void testGetFetchesFromRetrieverWhenNoCacheAvailable() throws Exception {
-        Asset asset = intializeAssetWithName("Test");
+        Asset asset = initializeAssetWithName("Test");
         Asset[] arr = {asset};
 
         try (MockedStatic<APIExceptionPropagate> mocked = mockStatic(APIExceptionPropagate.class)) {
@@ -84,10 +85,10 @@ class CacheCryptoTest {
     }
 
     @Test
-    void testPutMultipleStoresAllKindOfAssets() throws  Exception {
-        Asset a1 = intializeAssetWithName("Test1");
+    void testPutMultipleStoresAssets() throws  Exception {
+        Asset a1 = initializeAssetWithName("Test1");
 
-        Asset a2 = intializeAssetWithName("Test2");
+        Asset a2 = initializeAssetWithName("Test2");
 
         cache.putMultiple(List.of(a1, a2));
 
@@ -100,7 +101,7 @@ class CacheCryptoTest {
 
     @Test
     void testReadCacheLoadsValidData() throws Exception {
-        Asset asset = intializeAssetWithName("Test");
+        Asset asset = initializeAssetWithName("Test");
 
         ConcurrentHashMap<String, Pair<Long, Asset>> map = new ConcurrentHashMap<>();
         map.put(asset.name(), new Pair<>(100000L, asset));
@@ -109,7 +110,7 @@ class CacheCryptoTest {
         var w = new StringWriter();
         cache.saveCache(w);
         var r = new StringReader(w.getBuffer().toString());
-        CacheCrypto underTestCache = new CacheCrypto(r, mockRetriever);
+        CacheCrypto underTestCache = new CacheCrypto(r, mockRetriever, eventDispatcher);
 
         assertEquals("Test", underTestCache.get("Test").name(), "Expected after loading file" +
                 " to retrieve it from memory");
@@ -123,8 +124,8 @@ class CacheCryptoTest {
                 .when(failingReader)
                 .read(any(char[].class), anyInt(), anyInt());
 
-        assertDoesNotThrow(() -> new CacheCrypto(failingReader, mockRetriever),
-                "Expected nothing to be thrown and an empty db to be intialized"
+        assertDoesNotThrow(() -> new CacheCrypto(failingReader, mockRetriever, eventDispatcher),
+                "Expected nothing to be thrown and an empty db to be initialized"
         );
     }
 
@@ -142,7 +143,7 @@ class CacheCryptoTest {
         );
     }
 
-    private Asset intializeAssetWithName(String name) {
+    private Asset initializeAssetWithName(String name) {
         return new Asset("Test",
                 name,
                 1,

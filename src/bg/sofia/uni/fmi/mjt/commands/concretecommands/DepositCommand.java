@@ -1,13 +1,19 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
+import bg.sofia.uni.fmi.mjt.exceptions.app.AppExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.exceptions.app.repository.DataAcessException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalNameException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalPasswordException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserHasNotBeenRegistered;
 import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.IllegalAmountTypeException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.NegativeMoneyException;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.math.BigDecimal;
@@ -18,7 +24,7 @@ public class DepositCommand extends Command {
     private static final int ARGUMENTS_COUNT = 1;
     private static final String MONEY = "money";
 
-    public DepositCommand(List<String> arguments, String user) {
+    public DepositCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -34,10 +40,9 @@ public class DepositCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
-            throws NoUserLoggedIn, InvalidCommandArgumentCount,
-            NegativeMoneyException, IllegalAmountTypeException,
-            InvalidCommandFormat {
+    public String execute(WalletManagerRepositoryDB storage)
+            throws AppExecutionException,
+            DataAcessException {
         isValidSessionPresent();
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);
@@ -50,6 +55,6 @@ public class DepositCommand extends Command {
         }
         BigDecimal afterDeposit = storage.depositMoney(amount, user);
         return GSON.toJson(new ServerResponse(GOOD_STATUS,
-            "Money deposited current balance: " + afterDeposit, null));
+            "Money deposited current balance: " + afterDeposit, user));
     }
 }

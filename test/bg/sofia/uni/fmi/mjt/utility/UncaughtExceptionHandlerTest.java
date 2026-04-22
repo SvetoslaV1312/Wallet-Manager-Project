@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.utility;
 
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.server.WalletManagerServer;
 import bg.sofia.uni.fmi.mjt.cache.CacheCrypto;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +25,7 @@ public class UncaughtExceptionHandlerTest {
     private ByteArrayOutputStream out;
     private Path file;
 
-    private final WalletManagerRepository repo = mock();
+    private final WalletManagerRepositoryDB repo = mock();
     private final CacheCrypto cache = mock();
     private final WalletManagerServer server = mock();
     @BeforeEach
@@ -34,7 +34,7 @@ public class UncaughtExceptionHandlerTest {
         System.setOut(new PrintStream(out));
         file = tempDir.resolve("test.txt");
 
-        doNothing().when(repo).saveUsersToDataBase(any());
+        //doNothing().when(repo).saveUsersToDataBase(any());
         when(repo.cachedCryptoCurrency()).thenReturn(cache);
         doNothing().when(cache).saveCache(any());
         doNothing().when(server).stop();
@@ -63,8 +63,8 @@ public class UncaughtExceptionHandlerTest {
         assertTrue(content.contains("Timestamp"), "Expected to have specific Timestamp parameter for file save");
     }
 
-    private void serverTermination(WalletManagerRepository repo) throws InterruptedException {
-        UncaughtExceptionHandler.setThreadToHandleExceptionBeforeTermination(repo, file, server);
+    private void serverTermination(WalletManagerRepositoryDB repo) throws InterruptedException {
+        UncaughtExceptionHandler.setThreadToHandleExceptionBeforeTermination(repo.cachedCryptoCurrency(), file, server);
 
         Thread t = new Thread(() -> {
             throw new RuntimeException("ROOT MESSAGE");

@@ -1,16 +1,12 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
-import bg.sofia.uni.fmi.mjt.exceptions.api.ApiKeyLimitExceededException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.BadRequestException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.CryptoNotFoundException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.DataUnavailableException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.InsufficientPermissions;
-import bg.sofia.uni.fmi.mjt.exceptions.api.UnauthorizedKeyException;
+import bg.sofia.uni.fmi.mjt.entity.User;
+import bg.sofia.uni.fmi.mjt.exceptions.api.*;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.util.List;
@@ -19,7 +15,7 @@ import java.util.Map;
 public class ListOfferingsCommand extends Command {
     private static final int ARGUMENTS_COUNT = 0;
 
-    public ListOfferingsCommand(List<String> arguments, String user) {
+    public ListOfferingsCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -32,14 +28,14 @@ public class ListOfferingsCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
-            throws InvalidCommandArgumentCount, DataUnavailableException, InsufficientPermissions, BadRequestException,
-            UnauthorizedKeyException, ApiKeyLimitExceededException, CryptoNotFoundException, InvalidCommandFormat {
+    public String execute(WalletManagerRepositoryDB storage)
+            throws InvalidCommandArgumentCount, ApiExecutionException,
+            InvalidCommandFormat {
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);
 
         String offerings = storage.listOfferings();
         return GSON.toJson(new ServerResponse(GOOD_STATUS,
-            "All available offerings: " + offerings, null));
+            "All available offerings: " + offerings, user));
     }
 }

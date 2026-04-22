@@ -2,11 +2,12 @@ package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
 import bg.sofia.uni.fmi.mjt.commands.CommandEnum;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class HelpCommand extends Command {
     private static final String COMMANDS = "List of commands: ";
     private static final int ARGS_COUNT = 0;
 
-    public HelpCommand(List<String> arguments, String user) {
+    public HelpCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -29,7 +30,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
+    public String execute(WalletManagerRepositoryDB storage)
             throws NoUserLoggedIn, InvalidCommandArgumentCount, InvalidCommandFormat {
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);
@@ -39,7 +40,7 @@ public class HelpCommand extends Command {
             sb.append(element.commandName()).append(System.lineSeparator());
         }
         return GSON.toJson(new ServerResponse(GOOD_STATUS,
-            sb.toString(), null));
+            sb.toString(), user));
     }
 }
 

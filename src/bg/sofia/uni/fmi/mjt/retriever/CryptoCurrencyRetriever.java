@@ -1,7 +1,7 @@
 package bg.sofia.uni.fmi.mjt.retriever;
 
 import bg.sofia.uni.fmi.mjt.apikey.ApiKeyProvider;
-import bg.sofia.uni.fmi.mjt.apikey.ApiKeyProviderSystemImpl;
+import bg.sofia.uni.fmi.mjt.apikey.ApiKeyProviderEnvironmentImpl;
 import bg.sofia.uni.fmi.mjt.entity.Asset;
 import bg.sofia.uni.fmi.mjt.entity.LocalDateTimeAdapter;
 import bg.sofia.uni.fmi.mjt.exceptions.ExceptionFactory;
@@ -48,7 +48,7 @@ public class CryptoCurrencyRetriever {
             .executor(IO_EXECUTOR)
             .build();
 
-        return new CryptoCurrencyRetriever(client, new ApiKeyProviderSystemImpl());
+        return new CryptoCurrencyRetriever(client, new ApiKeyProviderEnvironmentImpl());
     }
 
     public CompletableFuture<Asset[]> getCryptoCurrencyAsync(String cryptoCurrency, Boolean pages) {

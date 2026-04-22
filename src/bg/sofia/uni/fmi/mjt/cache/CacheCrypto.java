@@ -1,16 +1,12 @@
 package bg.sofia.uni.fmi.mjt.cache;
 
-import bg.sofia.uni.fmi.mjt.entity.LocalDateTimeAdapter;
-import bg.sofia.uni.fmi.mjt.exceptions.api.ApiExecutionException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.ApiKeyLimitExceededException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.BadRequestException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.CryptoNotFoundException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.DataUnavailableException;
-import bg.sofia.uni.fmi.mjt.exceptions.api.InsufficientPermissions;
-import bg.sofia.uni.fmi.mjt.exceptions.api.UnauthorizedKeyException;
-import bg.sofia.uni.fmi.mjt.retriever.CryptoCurrencyRetriever;
+import bg.sofia.uni.fmi.mjt.alerts.CryptoPriceUpdateEvent;
+import bg.sofia.uni.fmi.mjt.alerts.EventDispatcher;
 import bg.sofia.uni.fmi.mjt.entity.Asset;
 import bg.sofia.uni.fmi.mjt.entity.CachedEntity;
+import bg.sofia.uni.fmi.mjt.entity.LocalDateTimeAdapter;
+import bg.sofia.uni.fmi.mjt.exceptions.api.*;
+import bg.sofia.uni.fmi.mjt.retriever.CryptoCurrencyRetriever;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -23,16 +19,18 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static bg.sofia.uni.fmi.mjt.exceptions.APIExceptionPropagate.joinOrPropagate;
-
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class CacheCrypto {
     private static final int MAX_SIZE = 20;
@@ -46,15 +44,16 @@ public class CacheCrypto {
     private static final boolean ACCESS_ORDER = true;
     private static final int BUFFER_SIZE = 512;
     private Map<String, CachedEntity> cache;
-
+    private final EventDispatcher eventDispatcher;
     private final ReentrantReadWriteLock lock;
 
     private final CryptoCurrencyRetriever cryptoCurrencyRetriever;
 
-    public CacheCrypto(Reader loadFrom, CryptoCurrencyRetriever cryptoCurrencyRetriever) {
+    public CacheCrypto(Reader loadFrom, CryptoCurrencyRetriever cryptoCurrencyRetriever, EventDispatcher eventDispatcher) {
         this.cache = new LinkedHashMap<>(MAX_SIZE, LOAD_FACTOR, ACCESS_ORDER);
         this.lock = new ReentrantReadWriteLock();
         this.cryptoCurrencyRetriever = cryptoCurrencyRetriever;
+        this.eventDispatcher = eventDispatcher;
         readCacheFromFile(loadFrom);
     }
 
@@ -73,6 +72,8 @@ public class CacheCrypto {
         Asset result = getAsset(cryptoCurrency);
         lock.writeLock().lock();
         try {
+            eventDispatcher.dispatch(new CryptoPriceUpdateEvent(result.name(),
+                    BigDecimal.valueOf(result.price_usd())));
             cache.put(cryptoCurrency, new CachedEntity(now, result));
             evictIfNeeded();
         } finally {
@@ -122,16 +123,25 @@ public class CacheCrypto {
         var bufferedReader = new BufferedReader(reader, BUFFER_SIZE);
         lock.writeLock().lock();
         try {
-            String json = readAll(bufferedReader);
+            String base64 = readAll(bufferedReader);
+
+            if (base64.isBlank()) {
+                cache = new ConcurrentHashMap<>();
+                return;
+            }
+
+            byte[] encrypted = Base64.getDecoder().decode(base64);
+            byte[] decrypted = CryptoMemoryFilesEncryption.decryptBytes(encrypted);
+
+            String json = new String(decrypted, StandardCharsets.UTF_8);
+
             Type type = new TypeToken<ConcurrentHashMap<String, CachedEntity>>() {
             }.getType();
             Map<String, CachedEntity> readCache = GSON.fromJson(json, type);
 
-            if (readCache == null) {
-                cache = new ConcurrentHashMap<>();
-            } else {
-                cache = new ConcurrentHashMap<>(readCache);
-            }
+            cache = (readCache == null)
+                    ? new ConcurrentHashMap<>()
+                    : new ConcurrentHashMap<>(readCache);
 
         } catch (IOException e) {
             cache = new ConcurrentHashMap<>();
@@ -154,8 +164,13 @@ public class CacheCrypto {
     private void writeCacheToFile(Writer writer) {
         var bufferedWriter = new BufferedWriter(writer, BUFFER_SIZE);
         try {
-            bufferedWriter.write(GSON.toJson(cache));
+            String json = GSON.toJson(cache);
+            byte[] encrypted = CryptoMemoryFilesEncryption.encryptBytes(json.getBytes(StandardCharsets.UTF_8));
+
+            String base64 = Base64.getEncoder().encodeToString(encrypted);
+            bufferedWriter.write(base64);
             bufferedWriter.flush();
+
         } catch (IOException e) {
             throw new UncheckedIOException("A problem occurred while writing to a file", e);
         }

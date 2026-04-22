@@ -1,11 +1,13 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserAlreadyLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,10 +15,10 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 public class RegisterCommandTest {
-
     @Test
-    void testExecuteThrowsUserAlreadyLoggedInWhenSessionExists() {
-        Command command = new RegisterCommand(List.of("user", "pass"), "alreadyLoggedInUser");
+    void testExecuteThrowsUserAlreadyLoggedInWhenSessionExists() throws Exception {
+        User user = new User("user", "pass");
+        Command command = new RegisterCommand(List.of("user", "pass"), user);
 
         Assertions.assertThrows(
             UserAlreadyLoggedIn.class,
@@ -49,7 +51,7 @@ public class RegisterCommandTest {
 
     @Test
     void testExecuteReturnsCorrectJsonMessageOnSuccess() throws Exception {
-        WalletManagerRepository storage = mock(WalletManagerRepository.class);
+        WalletManagerRepositoryDB storage = mock(WalletManagerRepositoryDB.class);
 
         Command command = new RegisterCommand(List.of("--username=user", "--password=pass"), null);
 

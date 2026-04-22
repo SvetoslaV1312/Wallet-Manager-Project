@@ -1,11 +1,15 @@
 package bg.sofia.uni.fmi.mjt.server;
 
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.alerts.EventDispatcher;
+import bg.sofia.uni.fmi.mjt.alerts.HandlerAutoRegister;
+import bg.sofia.uni.fmi.mjt.entity.User;
+import bg.sofia.uni.fmi.mjt.repository.DataSource;
+import bg.sofia.uni.fmi.mjt.repository.MyInMemoryWithDb;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.retriever.CryptoCurrencyRetriever;
 import bg.sofia.uni.fmi.mjt.thread.CommandWorkerThread;
 import bg.sofia.uni.fmi.mjt.response.ClientResponse;
 
-import bg.sofia.uni.fmi.mjt.repository.InMemoryWalletManager;
 import bg.sofia.uni.fmi.mjt.thread.StopServerDaemonThread;
 import bg.sofia.uni.fmi.mjt.cache.CacheCrypto;
 import bg.sofia.uni.fmi.mjt.utility.UncaughtExceptionHandler;
@@ -48,15 +52,15 @@ public class WalletManagerServer {
     private static boolean running = true;
     private final Selector selector;
     private final ServerSocketChannel serverSocketChannel;
-    private final WalletManagerRepository repository;
+    private final WalletManagerRepositoryDB repository;
 
-    private String user = null;
+    private User user = null;
 
     static   void main() {
         startServer();
     }
 
-    public WalletManagerServer(WalletManagerRepository repository) {
+    public WalletManagerServer(WalletManagerRepositoryDB repository) {
         try {
             selector = Selector.open();
             serverSocketChannel = ServerSocketChannel.open();
@@ -111,26 +115,29 @@ public class WalletManagerServer {
         APP_EXECUTOR.shutdown();
     }
 
-    public static void prepareConsoleOnShutdown(WalletManagerServer server, WalletManagerRepository repository) {
-        Thread consoleThread = new Thread(new StopServerDaemonThread(server, repository));
+    public static void prepareConsoleOnShutdown(WalletManagerServer server, CacheCrypto cacheCrypto) {
+        Thread consoleThread = new Thread(new StopServerDaemonThread(server, cacheCrypto));
         consoleThread.setDaemon(true);
         consoleThread.start();
     }
 
     private static void startServer() {
-        WalletManagerRepository repository;
-        try (Reader walletManagerReader = intializeReader(WALLET_MANAGER);
-             Reader cacheFileReader  = intializeReader(CACHE_FILE)) {
-            repository = new InMemoryWalletManager(walletManagerReader,
-                    new CacheCrypto(cacheFileReader, CryptoCurrencyRetriever.createDefault()));
+        WalletManagerRepositoryDB repositoryDB;
+        EventDispatcher eventDispatcher = new EventDispatcher();
+        HandlerAutoRegister.registerHandlers(eventDispatcher, "src/bg/sofia/uni/fmi/mjt/alerts");
+        try (Reader cacheFileReader  = intializeReader(CACHE_FILE)) {
+            repositoryDB = new MyInMemoryWithDb(new CacheCrypto(cacheFileReader,
+                    CryptoCurrencyRetriever.createDefault(), eventDispatcher),
+                    new DataSource("UsersDataSource.properties"));
         } catch (IOException e) {
             throw new UncheckedIOException("Server aborted because of a problem when loading information", e);
 
         }
-        WalletManagerServer server = new WalletManagerServer(repository);
+        WalletManagerServer server = new WalletManagerServer(repositoryDB);
 
-        UncaughtExceptionHandler.setThreadToHandleExceptionBeforeTermination(repository, CRASH_FILE, server);
-        prepareConsoleOnShutdown(server, repository);
+        UncaughtExceptionHandler.setThreadToHandleExceptionBeforeTermination(repositoryDB.cachedCryptoCurrency(),
+                CRASH_FILE, server);
+        prepareConsoleOnShutdown(server, repositoryDB.cachedCryptoCurrency());
 
         server.start();
     }

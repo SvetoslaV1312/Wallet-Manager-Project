@@ -22,7 +22,7 @@ public class UserWallet implements Serializable {
     public static final String INDENT = " ";
     private BigDecimal balance;
     private BigDecimal invested;
-    private final Map<String, BigDecimal> assets;
+    private Map<String, BigDecimal> assets;
 
     public UserWallet() {
         assets = new HashMap<>();
@@ -43,7 +43,7 @@ public class UserWallet implements Serializable {
         return assets;
     }
 
-    public void buyOffering(String offeringCode, BigDecimal amount, BigDecimal assetPrice)
+    public BigDecimal buyOffering(String offeringCode, BigDecimal amount, BigDecimal assetPrice)
         throws  WalletBalanceExceeded, NegativeMoneyException {
         checkAmount(amount);
         if (balance.subtract(amount).compareTo(BigDecimal.valueOf(0)) < 0) {
@@ -57,9 +57,10 @@ public class UserWallet implements Serializable {
         BigDecimal newlyInvested =  amount.divide(assetPrice, MathContext.DECIMAL64);
 
         assets.put(offeringCode, currentlyInvested.add(newlyInvested));
+        return currentlyInvested.add(newlyInvested);
     }
 
-    public void sellOffering(String offeringCode, BigDecimal assetPrice) throws CryptoNotFoundInWallet {
+    public BigDecimal sellOffering(String offeringCode, BigDecimal assetPrice) throws CryptoNotFoundInWallet {
         if (assets.get(offeringCode) == null) {
             throw new CryptoNotFoundInWallet("Can't find this crypto in the user's wallet");
         }
@@ -67,6 +68,7 @@ public class UserWallet implements Serializable {
         balance = balance.add(currentlyInvected);
         invested = invested.subtract(currentlyInvected);
         assets.remove(offeringCode);
+        return balance;
     }
 
     @Override
@@ -87,8 +89,12 @@ public class UserWallet implements Serializable {
         return s.concat(OVERALL_PLUS + (sum.subtract(invested)) + USD);
     }
 
+    public void setAssets( Map<String, BigDecimal> assets) {
+        this.assets = assets;
+    }
+
     private void checkAmount(BigDecimal amount) throws NegativeMoneyException {
-        if (amount.compareTo(BigDecimal.valueOf(0)) <= 0) {
+        if (amount.compareTo(BigDecimal.valueOf(0)) < 0) {
             throw new NegativeMoneyException("Amount must be positive");
         }
     }

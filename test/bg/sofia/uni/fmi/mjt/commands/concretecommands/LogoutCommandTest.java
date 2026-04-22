@@ -2,11 +2,13 @@ package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
 import bg.sofia.uni.fmi.mjt.commands.CommandEnum;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
@@ -15,14 +17,20 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 
 public class LogoutCommandTest {
+    private User user;
+    @BeforeEach
+    void setUp() throws Exception {
+        user = new User("test", "password");
+    }
+
     @Mock
-    WalletManagerRepository repo = mock();
+    WalletManagerRepositoryDB repo = mock();
 
     @Test
     void testExecuteReturnsJsonResponse() throws Exception {
-        Command command = new LogoutCommand(List.of(), "testUser");
+        Command command = new LogoutCommand(List.of(), user);
 
-        String result = command.execute(mock(WalletManagerRepository.class));
+        String result = command.execute(mock(WalletManagerRepositoryDB.class));
 
         Assertions.assertTrue(
                 result.startsWith("{") && result.endsWith("}"),
@@ -32,9 +40,9 @@ public class LogoutCommandTest {
 
     @Test
     void testExecuteContainsGoodStatus() throws Exception {
-        Command command = new LogoutCommand(List.of(), "testUser");
+        Command command = new LogoutCommand(List.of(), user);
 
-        String result = command.execute(mock(WalletManagerRepository.class));
+        String result = command.execute(mock(WalletManagerRepositoryDB.class));
 
         Assertions.assertTrue(
                 result.contains("\"status\":\"OK\""),
@@ -44,7 +52,7 @@ public class LogoutCommandTest {
 
     @Test
     void testLogoutThrowsInvalidCommandArgumentCount() {
-        Command command = new LogoutCommand(List.of("--arg=test"), "testUser");
+        Command command = new LogoutCommand(List.of("--arg=test"), user);
         Assertions.assertThrows(InvalidCommandArgumentCount.class,
                 () -> command.execute(repo),
                 "Expected logout command to throw an exception"
@@ -53,7 +61,7 @@ public class LogoutCommandTest {
 
     @Test
     void testLogoutThrowsInvalidCommandFormat() {
-        Command command = new LogoutCommand(List.of("arg test"), "testUser");
+        Command command = new LogoutCommand(List.of("arg test"), user);
         Assertions.assertThrows(InvalidCommandFormat.class,
                 () -> command.execute(repo),
                 "Expected logout command to throw an exception"

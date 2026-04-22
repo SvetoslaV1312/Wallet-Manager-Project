@@ -1,15 +1,18 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
+import bg.sofia.uni.fmi.mjt.exceptions.app.AppExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.exceptions.app.repository.DataAcessException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalNameException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalPasswordException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserAlreadyExistsInDB;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserAlreadyLoggedIn;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserHasNotBeenRegistered;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
@@ -19,7 +22,7 @@ import java.util.Map;
 public class LogoutCommand extends Command {
     private static final int ARGUMENTS_COUNT = 0;
 
-    public LogoutCommand(List<String> arguments, String user) {
+    public LogoutCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -32,9 +35,9 @@ public class LogoutCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
-            throws InvalidCommandArgumentCount, UserAlreadyLoggedIn, UserAlreadyExistsInDB, IllegalPasswordException,
-            IllegalNameException, InvalidCommandFormat, UserHasNotBeenRegistered, NoUserLoggedIn {
+    public String execute(WalletManagerRepositoryDB storage)
+            throws AppExecutionException,
+            DataAcessException {
         isValidSessionPresent();
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);

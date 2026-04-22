@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.commands;
 
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
@@ -16,9 +17,9 @@ public abstract class Command implements CommandInterface {
     protected static final Gson GSON = new Gson();
     private static final String ALREADY_LOGGED_FORMAT = "You are logged in , cant register/login %s";
 
-    protected final String user;
+    protected final User user;
 
-    public Command(List<String> arguments, String user) {
+    public Command(List<String> arguments, User user) {
         this.arguments = arguments;
         this.user = user;
     }

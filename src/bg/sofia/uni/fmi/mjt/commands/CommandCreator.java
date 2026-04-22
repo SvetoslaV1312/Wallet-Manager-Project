@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.commands;
 
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.UnknownCommand;
 
 import java.util.Arrays;
@@ -13,7 +14,7 @@ public class CommandCreator {
         return Arrays.stream(input.split(" ")).toList();
     }
 
-    public static CommandInterface newCommand(String clientInput, String user) throws UnknownCommand {
+    public static CommandInterface newCommand(String clientInput, User user) throws UnknownCommand {
         List<String> tokens = CommandCreator.getCommandArguments(clientInput);
         String commandName = tokens.getFirst();
         List<String> args = tokens.subList(ARGS_START_TOKEN_IDX, tokens.size());

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="logback-core-1.5.32">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/logback-core-1.5.32.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

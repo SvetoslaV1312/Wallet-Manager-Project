@@ -121,7 +121,8 @@ class CryptoCurrencyRetrieverTest {
 
         CompletableFuture<HttpResponse<String>> future =
             CompletableFuture.completedFuture(mockResponse);
-
+        //след type erasure CompletableFuture<HttpResponse<String>> става просто CompletableFuture
+        //Mockito приема raw типове -> raw cast, защото generics не съществуват runtime
         when(mockedClient.sendAsync(any(), any())).thenReturn((CompletableFuture) future);
 
         Assertions.assertArrayEquals(assets, retriever.getCryptoCurrencyAsync("any", true).join(),

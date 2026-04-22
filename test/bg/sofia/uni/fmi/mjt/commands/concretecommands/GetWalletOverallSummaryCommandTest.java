@@ -1,10 +1,12 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,6 +15,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class GetWalletOverallSummaryCommandTest {
+    private User user;
+    @BeforeEach
+    void setUp() throws Exception {
+        user = new User("test", "password");
+    }
 
     @Test
     void testExecuteThrowsNoUserLoggedInWhenUserIsNull() {
@@ -27,7 +34,7 @@ public class GetWalletOverallSummaryCommandTest {
 
     @Test
     void testExecuteThrowsInvalidCommandArgumentCountWhenArgumentsProvided() {
-        Command command = new GetWalletOverallSummaryCommand(List.of("--extra=srh"), "testUser");
+        Command command = new GetWalletOverallSummaryCommand(List.of("--extra=srh"), user);
 
         Assertions.assertThrows(
             InvalidCommandArgumentCount.class,
@@ -38,17 +45,17 @@ public class GetWalletOverallSummaryCommandTest {
 
     @Test
     void testExecuteReturnsCorrectJsonMessageOnSuccess() throws Exception {
-        WalletManagerRepository storage = mock(WalletManagerRepository.class);
+        WalletManagerRepositoryDB storage = mock(WalletManagerRepositoryDB.class);
 
-        when(storage.getWalletOverallSummary("testUser"))
+        when(storage.getWalletOverallSummary(user))
             .thenReturn(" -> summary content");
 
-        Command command = new GetWalletOverallSummaryCommand(List.of(), "testUser");
+        Command command = new GetWalletOverallSummaryCommand(List.of(), user);
 
         String result = command.execute(storage);
 
         Assertions.assertTrue(
-            result.contains("Summary of the wallet of username testUser"),
+            result.contains("Summary of the wallet of username test"),
             "Expected JSON to contain the summary prefix"
         );
         Assertions.assertTrue(

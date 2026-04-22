@@ -19,12 +19,12 @@ public class APIExceptionPropagate {
             Throwable cause = e.getCause();
             String message = cause.getMessage();
             switch (cause) {
-                case ApiKeyLimitExceededException apiKeyLimitExceededException ->
+                case ApiKeyLimitExceededException _ ->
                     throw new ApiKeyLimitExceededException(message);
-                case BadRequestException badRequestException -> throw new BadRequestException(message);
-                case DataUnavailableException dataUnavailableException -> throw new DataUnavailableException(message);
-                case InsufficientPermissions insufficientPermissions -> throw new InsufficientPermissions(message);
-                case UnauthorizedKeyException unauthorizedKeyException -> throw new UnauthorizedKeyException(message);
+                case BadRequestException _ -> throw new BadRequestException(message);
+                case DataUnavailableException _ -> throw new DataUnavailableException(message);
+                case InsufficientPermissions _ -> throw new InsufficientPermissions(message);
+                case UnauthorizedKeyException _ -> throw new UnauthorizedKeyException(message);
                 default -> {
                 }
             }

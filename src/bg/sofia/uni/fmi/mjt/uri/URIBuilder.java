@@ -32,9 +32,8 @@ public class URIBuilder {
         }
 
         if (page != null) {
-            try {
-                FileReader reader = null;
-                reader = new FileReader(availableCrypto.toString());
+            try (FileReader reader = new FileReader(availableCrypto.toString());
+            ) {
                 String cryptoToLoad = reader.readAllAsString();
                 sb.append(DELIMITER).append(cryptoToLoad);
             } catch (IOException e) {

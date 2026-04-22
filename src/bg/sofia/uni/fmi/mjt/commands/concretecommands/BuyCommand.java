@@ -1,15 +1,21 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.api.ApiExecutionException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.AppExecutionException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
+import bg.sofia.uni.fmi.mjt.exceptions.app.repository.DataAcessException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalNameException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.IllegalPasswordException;
+import bg.sofia.uni.fmi.mjt.exceptions.app.user.UserHasNotBeenRegistered;
 import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.IllegalAmountTypeException;
 import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.NegativeMoneyException;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
 import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.WalletBalanceExceeded;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
 import bg.sofia.uni.fmi.mjt.utility.ArgumentParser;
 
 import java.math.BigDecimal;
@@ -21,7 +27,7 @@ public class BuyCommand extends Command {
     private static final String OFFERING = "offering";
     private static final String MONEY = "money";
 
-    public BuyCommand(List<String> arguments, String user) {
+    public BuyCommand(List<String> arguments, User user) {
         super(arguments, user);
     }
 
@@ -37,10 +43,9 @@ public class BuyCommand extends Command {
     }
 
     @Override
-    public String execute(WalletManagerRepository storage)
-            throws NoUserLoggedIn, InvalidCommandArgumentCount, ApiExecutionException,
-            WalletBalanceExceeded,
-            NegativeMoneyException, IllegalAmountTypeException, InvalidCommandFormat {
+    public String execute(WalletManagerRepositoryDB storage)
+            throws AppExecutionException, ApiExecutionException,
+            DataAcessException {
         isValidSessionPresent();
         var argsMap = ArgumentParser.parseString(arguments);
         checkArgumentsCount(argsMap);
@@ -52,7 +57,7 @@ public class BuyCommand extends Command {
             throw new IllegalAmountTypeException(DOUBLE_TYPE, e);
         }
         storage.buyOffering(argsMap.get(OFFERING), amount, argsMap.get("discount"), user);
-        return GSON.toJson(new ServerResponse(GOOD_STATUS, "Buy order executed", null));
+        return GSON.toJson(new ServerResponse(GOOD_STATUS, "Buy order executed", user));
 
     }
 }

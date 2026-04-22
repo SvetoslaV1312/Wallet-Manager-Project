@@ -8,17 +8,17 @@ import bg.sofia.uni.fmi.mjt.exceptions.app.wallet.WalletBalanceExceeded;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 import static bg.sofia.uni.fmi.mjt.encryption.PasswordEncryptionV2.hash;
-import static bg.sofia.uni.fmi.mjt.encryption.PasswordEncryptionV2.verify;
 
 public class User implements Serializable {
     private final String username;
     private final String password;
     private final UserWallet userWallet;
     private transient boolean isUserLoggedIn = false;
+    private final Map<String, Pair<Date, String>> notifications;
+
     public User(String username, String password)
         throws IllegalPasswordException, IllegalNameException {
         checkPassword(password);
@@ -26,18 +26,27 @@ public class User implements Serializable {
         this.password = hash(password);
         this.username = username;
         this.userWallet = new UserWallet();
+        this.notifications = new HashMap<>();
     }
 
     public String username() {
         return username;
     }
 
-    public boolean passwordMatch(String otherPassword) {
-        return verify(otherPassword, this.password);
+    public UserWallet getUserWallet() {
+        return userWallet;
     }
 
     public synchronized boolean isLoggedIn() {
         return isUserLoggedIn;
+    }
+
+    public void receiveNotification(String crypto, String message) {
+        notifications.put(crypto, new Pair<>(new Date(), message));
+    }
+
+    public String notifications() {
+        return notifications.toString();
     }
 
     public synchronized void setLoggedIn(boolean loggedIn) {
@@ -48,14 +57,14 @@ public class User implements Serializable {
         return userWallet.depositMoney(amount);
     }
 
-    public void buyOffering(String offeringCode, BigDecimal amount, BigDecimal assetPrice)
+    public BigDecimal buyOffering(String offeringCode, BigDecimal amount, BigDecimal assetPrice)
         throws WalletBalanceExceeded, NegativeMoneyException {
-        userWallet.buyOffering(offeringCode, amount, assetPrice);
+        return userWallet.buyOffering(offeringCode, amount, assetPrice);
     }
 
-    public void sellOffering(String offeringCode, BigDecimal assetPrice)
+    public BigDecimal sellOffering(String offeringCode, BigDecimal assetPrice)
         throws CryptoNotFoundInWallet {
-        userWallet.sellOffering(offeringCode, assetPrice);
+        return userWallet.sellOffering(offeringCode, assetPrice);
     }
 
     public String walletSummary() {

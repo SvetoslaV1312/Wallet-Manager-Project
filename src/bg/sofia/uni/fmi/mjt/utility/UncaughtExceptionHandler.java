@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.utility;
 
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.cache.CacheCrypto;
 import bg.sofia.uni.fmi.mjt.server.WalletManagerServer;
 import bg.sofia.uni.fmi.mjt.thread.SaveDBThread;
 
@@ -17,11 +17,11 @@ public class UncaughtExceptionHandler {
     private static final String EXCEPTION = "Exception: ";
     private static final String STACKTRACE = "Stacktrace:";
 
-    public static void setThreadToHandleExceptionBeforeTermination(WalletManagerRepository repository,
+    public static void setThreadToHandleExceptionBeforeTermination(CacheCrypto cacheCrypto,
                                                                    Path crashFile, WalletManagerServer server) {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             defaultSaveToFile(crashFile, throwable);
-            Thread savingThread = new Thread(new SaveDBThread(repository));
+            Thread savingThread = new Thread(new SaveDBThread(cacheCrypto));
             savingThread.setDaemon(false);
             savingThread.start();
             server.stop();
@@ -29,9 +29,8 @@ public class UncaughtExceptionHandler {
     }
 
     public static void setThreadToHandleExceptionBeforeClientTermination(Path crashFile) {
-        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            defaultSaveToFile(crashFile, throwable);
-        });
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
+            defaultSaveToFile(crashFile, throwable));
     }
 
     private static void defaultSaveToFile(Path crashFile, Throwable throwable) {

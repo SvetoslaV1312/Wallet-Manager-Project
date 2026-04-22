@@ -1,11 +1,13 @@
 package bg.sofia.uni.fmi.mjt.commands.concretecommands;
 
 import bg.sofia.uni.fmi.mjt.commands.Command;
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandArgumentCount;
 import bg.sofia.uni.fmi.mjt.exceptions.app.command.InvalidCommandFormat;
 import bg.sofia.uni.fmi.mjt.exceptions.app.user.NoUserLoggedIn;
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepositoryDB;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -13,6 +15,12 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 public class SellCommandTest {
+
+    private User user;
+    @BeforeEach
+    void setUp() throws Exception {
+        user = new User("test", "password");
+    }
 
     @Test
     void testExecuteThrowsNoUserLoggedInWhenUserIsNull() {
@@ -27,7 +35,7 @@ public class SellCommandTest {
 
     @Test
     void testExecuteThrowsInvalidCommandArgumentCountWhenNoArgumentsProvided() {
-        Command command = new SellCommand(List.of(), "testUser");
+        Command command = new SellCommand(List.of(), user);
 
         Assertions.assertThrows(
                 InvalidCommandFormat.class,
@@ -38,7 +46,7 @@ public class SellCommandTest {
 
     @Test
     void testExecuteThrowsInvalidCommandArgumentCountWhenTooManyArgumentsProvided() {
-        Command command = new SellCommand(List.of("--offering=BTC", "--sth=EXTRA"), "testUser");
+        Command command = new SellCommand(List.of("--offering=BTC", "--sth=EXTRA"), user);
 
         Assertions.assertThrows(
             InvalidCommandArgumentCount.class,
@@ -49,9 +57,9 @@ public class SellCommandTest {
 
     @Test
     void testExecuteReturnsCorrectJsonMessageOnSuccess() throws Exception {
-        WalletManagerRepository storage = mock(WalletManagerRepository.class);
+        WalletManagerRepositoryDB storage = mock(WalletManagerRepositoryDB.class);
 
-        Command command = new SellCommand(List.of("--offering=BTC"), "testUser");
+        Command command = new SellCommand(List.of("--offering=BTC"), user);
 
         String result = command.execute(storage);
 

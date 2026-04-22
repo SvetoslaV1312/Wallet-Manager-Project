@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.thread;
 
-import bg.sofia.uni.fmi.mjt.repository.WalletManagerRepository;
+import bg.sofia.uni.fmi.mjt.cache.CacheCrypto;
 import bg.sofia.uni.fmi.mjt.server.WalletManagerServer;
 
 import java.util.NoSuchElementException;
@@ -10,16 +10,16 @@ public class StopServerDaemonThread implements Runnable {
     private static final String SHUTTING_DOWN_SERVER = "Shutting down server...";
     private static final String STOP = "stop";
     private final WalletManagerServer server;
-    private final WalletManagerRepository repository;
+    private final CacheCrypto cacheCrypto;
 
-    public StopServerDaemonThread(WalletManagerServer server, WalletManagerRepository repository) {
+    public StopServerDaemonThread(WalletManagerServer server, CacheCrypto cacheCrypto) {
         this.server = server;
-        this.repository = repository;
+        this.cacheCrypto = cacheCrypto;
     }
 
     @Override
     public void run() {
-        Thread savingThread = new Thread(new SaveDBThread(repository));
+        Thread savingThread = new Thread(new SaveDBThread(cacheCrypto));
         savingThread.setDaemon(false);
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {

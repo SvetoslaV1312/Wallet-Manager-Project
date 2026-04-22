@@ -1,5 +1,6 @@
 package bg.sofia.uni.fmi.mjt.client;
 
+import bg.sofia.uni.fmi.mjt.entity.User;
 import bg.sofia.uni.fmi.mjt.response.ClientResponse;
 import bg.sofia.uni.fmi.mjt.response.ServerResponse;
 import bg.sofia.uni.fmi.mjt.utility.UncaughtExceptionHandler;
@@ -23,7 +24,8 @@ public class WalletManagerClient {
     private static final Path CRASH_FILE = Path.of("out", "crash.log");
     private static final String CONNECTED_TO_THE_SERVER = "Connected to the server.";
     private static final String DISCONNECT = "disconnect";
-    private String user = null;
+    public static final String LOGOUT = "logout";
+    private User user = null;
 
     static void main() {
         UncaughtExceptionHandler.setThreadToHandleExceptionBeforeClientTermination(CRASH_FILE);
@@ -46,6 +48,8 @@ public class WalletManagerClient {
                 String command = scanner.nextLine();
 
                 if (command.equals(DISCONNECT)) {
+                    startRequest(buffer, LOGOUT);
+                    processResponse(buffer, socketChannel);
                     break;
                 }
                 startRequest(buffer, command);
@@ -71,10 +75,7 @@ public class WalletManagerClient {
         String reply = new String(byteArray, StandardCharsets.UTF_8); // buffer drain
         ServerResponse response = GSON.fromJson(reply, ServerResponse.class);
         System.out.println(response.message());
-
-        if (response.user() != null) {
-            user = response.user();
-        }
+        user = response.user();
     }
 
     private void startRequest(ByteBuffer buffer, String command) {
